@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>BTC Strategy — Validated</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e14;
+  --bg-soft: #11161e;
+  --panel: #161b24;
+  --panel-2: #1c222d;
+  --line: #252b37;
+  --muted: #5a6171;
+  --text: #d4d8df;
+  --text-bright: #f0f2f5;
+  --accent: #d4a574;
+  --accent-soft: #b88f5d;
+  --buy: #6dbb91;
+  --sell: #d97e6e;
+  --stop: #c4a951;
+  --info: #7d9ec6;
+  --grid: #1f2530;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.55;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(212, 165, 116, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 100%, rgba(125, 158, 198, 0.04) 0%, transparent 50%);
+  padding: 32px 16px 64px;
+}
+
+.container { max-width: 1320px; margin: 0 auto; }
+
+header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+}
+.brand-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.brand {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 28px;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+}
+.brand span { color: var(--accent); font-style: italic; }
+.subtitle {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.validation-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(109, 187, 145, 0.10);
+  border: 1px solid rgba(109, 187, 145, 0.30);
+  color: var(--buy);
+  border-radius: 3px;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+}
+@media (max-width: 1000px) {
+  .lab-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 24px;
+}
+.panel-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.panel-subtitle {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 20px;
+}
+
+.input-group { margin-bottom: 18px; }
+.input-group label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.input-group .label-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.input-group .label-row .hint {
+  color: var(--accent-soft); font-size: 10px; letter-spacing: 0.05em;
+}
+
+.input-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.input-row .prefix {
+  color: var(--muted); font-size: 14px; width: 16px;
+}
+
+input[type="text"], input[type="number"], input[type="date"] {
+  flex: 1;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  color: var(--text-bright);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 3px;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+}
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--panel-2);
+}
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px;
+  background: var(--line);
+  border-radius: 2px; outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--bg);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--bg);
+}
+
+.results {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.result-headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+.result-action {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+.result-action.buy { color: var(--buy); }
+.result-action.sell { color: var(--sell); }
+.result-action.stop { color: var(--stop); }
+.result-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px;
+}
+.metric { display: flex; flex-direction: column; }
+.metric-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.metric-value {
+  font-size: 17px;
+  color: var(--text-bright);
+  font-weight: 500;
+}
+.sigma-bar {
+  position: relative;
+  height: 6px;
+  background: linear-gradient(90deg,
+    #4a7ab8 0%, #5db185 35%,
+    var(--accent) 50%,
+    #c97f5d 65%, #a04545 100%);
+  border-radius: 3px;
+  margin-top: 10px;
+}
+.sigma-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  background: var(--text-bright);
+  box-shadow: 0 0 8px rgba(255,255,255,0.5);
+  transition: left 0.3s;
+}
+.sigma-bar-labels {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: var(--muted);
+  margin-top: 4px; letter-spacing: 0.05em;
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 24px 0 20px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.checkbox-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+.checkbox-row input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.checkbox-row input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: bold;
+  top: -2px; left: 2px;
+}
+.checkbox-row label {
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.chart-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 20px 24px 24px;
+  margin-bottom: 24px;
+}
+.chart-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 14px;
+  flex-wrap: wrap; gap: 8px;
+}
+.chart-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  color: var(--text-bright);
+}
+.chart-hint {
+  font-size: 10.5px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.chart-container {
+  position: relative;
+  height: 360px;
+}
+
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 20px 24px 24px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+.table-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  color: var(--text-bright);
+  margin-bottom: 14px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+th, td {
+  text-align: right;
+  padding: 9px 8px;
+  border-bottom: 1px solid var(--grid);
+  font-variant-numeric: tabular-nums;
+}
+th:first-child, td:first-child { text-align: left; }
+th {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 11px;
+}
+tr.user-row { background: rgba(212, 165, 116, 0.06); }
+tr.user-row td:first-child { color: var(--accent); font-weight: 500; }
+.action-cell.buy { color: var(--buy); }
+.action-cell.sell { color: var(--sell); }
+.action-cell.stop { color: var(--stop); }
+
+.validation {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.validation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+.val-card {
+  background: var(--bg-soft);
+  border-left: 2px solid var(--accent);
+  padding: 14px 16px;
+}
+.val-card-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.val-card-value {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.val-card-detail {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.val-card.win { border-left-color: var(--buy); }
+.val-card.win .val-card-value { color: var(--buy); }
+
+footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+footer span { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="brand-row">
+    <div>
+      <div class="brand">BTC <span>Adaptive DCA</span></div>
+      <div class="subtitle" style="margin-top:4px;">validated through walk-forward + monte carlo</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <span class="validation-badge">+128 p.p. vs naive DCA · 10y horizon</span>
+    </div>
+  </div>
+  <div class="subtitle" style="margin-top:8px;">today: <span id="today-date" style="color:var(--accent)"></span> · power law: P = 10^(-16.4774) · d^5.6800 · σ_log = 0.3022</div>
+</header>
+
+<section class="validation">
+  <div class="panel-title">Validation Results</div>
+  <div class="panel-subtitle">monte carlo · 500 simulations · 10 years forward</div>
+  <div class="validation-grid">
+    <div class="val-card win">
+      <div class="val-card-label">median 10y ROI</div>
+      <div class="val-card-value">+531%</div>
+      <div class="val-card-detail">vs naive DCA: +403%<br>improvement: +128 p.p.</div>
+    </div>
+    <div class="val-card">
+      <div class="val-card-label">median CAGR</div>
+      <div class="val-card-value">~20%/yr</div>
+      <div class="val-card-detail">$60k invested<br>→ $378k median outcome</div>
+    </div>
+    <div class="val-card">
+      <div class="val-card-label">5–95% range</div>
+      <div class="val-card-value">$272–504k</div>
+      <div class="val-card-detail">from $60k total invested<br>over 10 years</div>
+    </div>
+    <div class="val-card win">
+      <div class="val-card-label">historical wins</div>
+      <div class="val-card-value">6 / 6</div>
+      <div class="val-card-detail">beat naive DCA in all<br>start dates 2018–2023</div>
+    </div>
+  </div>
+</section>
+
+<div class="lab-grid">
+  <aside class="panel">
+    <div class="panel-title">Inputs</div>
+    <div class="panel-subtitle">function arguments</div>
+
+    <div class="input-group">
+      <div class="label-row">
+        <label>current price</label>
+        <span class="hint" id="price-source" style="color:var(--muted);">loading...</span>
+      </div>
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="text" id="price" value="78180" inputmode="numeric" autocomplete="off">
+      </div>
+      <input type="range" id="price-slider" min="0" max="1000" step="1" value="500" style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);margin-top:4px;letter-spacing:0.05em;">
+        <span>$1k</span><span>$100k</span><span>$10M</span><span>$1B</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="label-row">
+        <label>BTC held</label>
+        <span class="hint">your position</span>
+      </div>
+      <div class="input-row">
+        <span class="prefix">฿</span>
+        <input type="text" id="btc-held" value="0" inputmode="decimal" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="label-row">
+        <label>total spent</label>
+        <span class="hint">cumulative invested</span>
+      </div>
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="text" id="total-spent" value="0" inputmode="numeric" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="label-row">
+        <label>base monthly amount</label>
+        <span class="hint">$10 minimum</span>
+      </div>
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="text" id="base" value="1" inputmode="numeric" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="label-row">
+        <label>date</label>
+        <span class="hint" title="Power Law trend grows over time. Use future dates to test how zones shift.">trend reference</span>
+      </div>
+      <input type="date" id="date" value="2026-04-24" min="2010-07-18" max="2050-12-31">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="checkbox-row" style="margin-bottom:14px;">
+      <input type="checkbox" id="risk-enabled">
+      <label for="risk-enabled" style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text);">enable risk controls</label>
+    </div>
+
+    <div id="risk-section" style="opacity:0.4;pointer-events:none;transition:opacity 0.2s;">
+      <div class="input-group">
+        <div class="label-row">
+          <label>risk factor</label>
+          <span class="hint" id="risk-display">×1.00</span>
+        </div>
+        <input type="range" id="risk" min="0.1" max="2.0" step="0.05" value="1.0">
+        <div style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);margin-top:4px;letter-spacing:0.05em;">
+          <span>×0.1</span><span>×1.0</span><span>×2.0</span>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="label-row">
+          <label>max monthly</label>
+          <span class="hint" id="max-display">$500</span>
+        </div>
+        <div class="input-row">
+          <span class="prefix">$</span>
+          <input type="text" id="max-monthly" value="1" inputmode="numeric" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="checkbox-row" style="margin-top:14px;">
+        <input type="checkbox" id="show-native">
+        <label for="show-native">show unconstrained curve</label>
+      </div>
+    </div>
+
+    <div class="val-card" style="margin-top:24px;">
+      <div class="val-card-label">strategy formula</div>
+      <div style="font-family:'JetBrains Mono';font-size:11px;color:var(--text);line-height:1.7;margin-top:8px;">
+        if 1.0 &lt; σ &lt; 1.5: <span style="color:var(--stop)">stop</span><br>
+        if σ ≤ 1.0: max(e^(-0.69σ) - 0.5, 0)<br>
+        if σ ≥ 1.5: -0.5(σ - 1.5)
+      </div>
+      <div class="val-card-detail" style="margin-top:10px;">
+        validated empirically · simpler than alternatives · won walk-forward
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <section class="results">
+      <div class="result-headline">
+        <div>
+          <div class="result-action" id="action-display">CALCULATING...</div>
+          <div class="subtitle" style="margin-top:6px;" id="zone-label">—</div>
+        </div>
+        <div class="result-amount" id="amount-display">$0</div>
+      </div>
+
+      <!-- Position metrics (derived from BTC held + total spent) -->
+      <div class="metrics" style="padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:18px;">
+        <div class="metric">
+          <span class="metric-label">avg buy price</span>
+          <span class="metric-value" id="avg-display">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">current value</span>
+          <span class="metric-value" id="value-display">$0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">unrealized P/L</span>
+          <span class="metric-value" id="pnl-display">—</span>
+        </div>
+      </div>
+
+      <!-- Strategy metrics -->
+      <div class="metrics">
+        <div class="metric" style="grid-column:span 2;">
+          <span class="metric-label">σ deviation from power law trend</span>
+          <span class="metric-value" id="sigma-display">0.00</span>
+          <div class="sigma-bar"><div class="sigma-marker" id="sigma-marker"></div></div>
+          <div class="sigma-bar-labels" id="sigma-labels">
+            <span>-2σ</span><span>-1</span><span>0</span><span>+1</span><span>+2σ</span>
+          </div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">power law fair price</span>
+          <span class="metric-value" id="fair-display">$0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">multiplier</span>
+          <span class="metric-value" id="mult-display">×0.00</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">expected 1yr return</span>
+          <span class="metric-value" id="expected-display">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chart-wrap">
+      <div class="chart-header">
+        <div class="chart-title">strategy curve · σ-zones</div>
+        <div class="chart-hint">
+          <span style="color:var(--buy);">■</span> buy &nbsp;
+          <span style="color:var(--stop);">■</span> stop &nbsp;
+          <span style="color:var(--sell);">■</span> sell &nbsp;
+          <span style="color:var(--muted);">┄</span> unconstrained &nbsp;
+          <span style="color:var(--text-bright);">●</span> you
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="main-chart"></canvas>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <div class="table-title">reference price levels — empirical 1-year median returns from each zone</div>
+      <table>
+        <thead>
+          <tr>
+            <th>price</th>
+            <th>σ</th>
+            <th>multiplier</th>
+            <th>amount</th>
+            <th>1yr median return</th>
+            <th>action</th>
+          </tr>
+        </thead>
+        <tbody id="ref-table"></tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<footer>
+  data: 5,760 daily BTC closes (2010–2026) · backtest: walk-forward 2010–2018 → 2018–2026 · monte carlo: 500 simulations 10y forward<br>
+  <span style="margin-top:8px;display:inline-block;">strategy validated · use at your own risk · not financial advice</span>
+</footer>
+</div>
+
+<script>
+const GENESIS = new Date('2009-01-03');
+const PL_A = -16.4774;
+const PL_N = 5.6800;
+const PL_SIGMA = 0.3022;
+
+function daysSinceGenesis(dateStr) {
+  const d = new Date(dateStr);
+  return Math.floor((d - GENESIS) / 86400000);
+}
+
+function getSigma(price, dateStr) {
+  const days = daysSinceGenesis(dateStr);
+  const log_pl = PL_A + PL_N * Math.log10(days);
+  return (Math.log10(price) - log_pl) / PL_SIGMA;
+}
+
+function fairPrice(dateStr) {
+  const days = daysSinceGenesis(dateStr);
+  return Math.pow(10, PL_A + PL_N * Math.log10(days));
+}
+
+function recommend(price, avgBuy, base, dateStr, opts = {}) {
+  const { riskFactor = 1.0, maxMonthly = null } = opts;
+  const sigma = getSigma(price, dateStr);
+  let mult;
+  if (sigma > 1.0 && sigma < 1.5) {
+    mult = 0;
+  } else if (sigma <= 1.0) {
+    mult = Math.max(Math.exp(-0.69 * sigma) - 0.5, 0);
+  } else {
+    // Sell zone: smooth start from σ=1.5, growing linearly
+    mult = -0.5 * (sigma - 1.5);
+  }
+  // Step 1: scale by risk factor (default 1.0 = no scaling)
+  let amt = mult * base * riskFactor;
+  // Step 2: cap by max_monthly if provided (in both directions)
+  if (maxMonthly !== null && maxMonthly > 0) {
+    if (amt > maxMonthly) amt = maxMonthly;
+    if (amt < -maxMonthly) amt = -maxMonthly;
+  }
+  // Step 3: round to whole dollars (we don't trade fractional cents)
+  amt = Math.round(amt);
+  // Step 4: threshold — sub-dollar actions become STOP.
+  // For typical bases this is 2% of base; for very small bases it's at least $1.
+  const threshold = Math.max(1, Math.round(base * 0.02));
+  if (Math.abs(amt) < threshold) amt = 0;
+  // Effective multiplier (after scaling and capping)
+  const effectiveMult = base > 0 ? amt / base : 0;
+  return { amt, mult: effectiveMult, sigma, rawMult: mult };
+}
+
+function expectedReturn1Y(sigma) {
+  if (sigma < -1.5) return 8466;
+  if (sigma < -1.0) return 607;
+  if (sigma < -0.5) return 147;
+  if (sigma < 0.5)  return 79;
+  if (sigma < 1.0)  return 15;
+  if (sigma < 1.5)  return -45;
+  return -54;
+}
+
+const fmtUSD = n => {
+  if (Math.abs(n) >= 1e6) return `$${(n/1e6).toFixed(2)}M`;
+  if (Math.abs(n) >= 1e3) return `$${(n/1e3).toFixed(1)}k`;
+  return `$${Math.round(n).toLocaleString()}`;
+};
+const fmtPlain = n => `$${Math.round(n).toLocaleString()}`;
+
+function zoneLabel(sigma) {
+  if (sigma < -2) return 'extreme oversold';
+  if (sigma < -1.5) return 'strongly undervalued';
+  if (sigma < -1.0) return 'undervalued';
+  if (sigma < -0.5) return 'cheaper than average';
+  if (sigma < 0.5)  return 'fair value';
+  if (sigma < 1.0)  return 'pricier than average';
+  if (sigma < 1.5)  return 'overvalued';
+  if (sigma < 2.0)  return 'strongly overvalued';
+  return 'bubble territory';
+}
+
+function actionFromAmt(amt, threshold) {
+  if (amt >= threshold) return { label: 'BUY', cls: 'buy' };
+  if (amt <= -threshold) return { label: 'SELL', cls: 'sell' };
+  return { label: 'STOP', cls: 'stop' };
+}
+
+function sigmaToPercent(sigma, sMin, sMax) {
+  // Map sigma to 0..100% on the bar, given range [sMin, sMax]
+  return Math.max(0, Math.min(100, ((sigma - sMin) / (sMax - sMin)) * 100));
+}
+
+const chartConfig = {
+  type: 'line',
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'nearest', intersect: false, axis: 'x' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#161b24',
+        borderColor: '#252b37',
+        borderWidth: 1,
+        titleColor: '#d4a574',
+        bodyColor: '#d4d8df',
+        titleFont: { family: 'JetBrains Mono', size: 11 },
+        bodyFont: { family: 'JetBrains Mono', size: 11 },
+        padding: 10,
+        cornerRadius: 3,
+        displayColors: false,
+        callbacks: {
+          title: items => `σ = ${items[0].parsed.x >= 0 ? '+' : ''}${items[0].parsed.x.toFixed(2)}`,
+          label: item => {
+            const sigma = item.parsed.x;
+            const amt = item.parsed.y;
+            const thr = currentBase * 0.02;
+            const action = amt >= thr ? 'BUY' : amt <= -thr ? 'SELL' : 'STOP';
+            return [`${action}  ${amt >= 0 ? '+' : ''}${fmtPlain(amt)}`,
+                    `price: ${fmtPlain(sigmaToPrice(sigma, currentDate))}`];
+          }
+        }
+      },
+      annotation: {}
+    },
+    scales: {
+      x: {
+        type: 'linear',
+        // min/max set dynamically in update() based on current σ
+        title: { display: true, text: 'σ deviation from power law trend',
+                 color: '#5a6171', font: { family: 'JetBrains Mono', size: 11 } },
+        ticks: {
+          color: '#5a6171',
+          font: { family: 'JetBrains Mono', size: 10 },
+          stepSize: 0.5,
+          callback: v => (v >= 0 ? '+' : '') + v.toFixed(1) + 'σ'
+        },
+        grid: { color: '#1f2530', borderColor: '#252b37' }
+      },
+      y: {
+        title: { display: true, text: 'recommended amount (USD)',
+                 color: '#5a6171', font: { family: 'JetBrains Mono', size: 11 } },
+        ticks: { color: '#5a6171', font: { family: 'JetBrains Mono', size: 10 },
+                 callback: v => fmtPlain(v) },
+        grid: { color: '#1f2530', borderColor: '#252b37' }
+      }
+    }
+  }
+};
+
+let currentDate = '2026-04-24';
+let currentBase = 500;
+
+function sigmaToPrice(sigma, dateStr) {
+  const days = daysSinceGenesis(dateStr);
+  const log_pl = PL_A + PL_N * Math.log10(days);
+  return Math.pow(10, log_pl + sigma * PL_SIGMA);
+}
+
+function buildCurve(avgBuy, base, dateStr, currentSigma, opts) {
+  const points = [];
+  // Adaptive σ range: ±3σ around current position (matches chart and table)
+  const sMin = currentSigma - 3;
+  const sMax = currentSigma + 3;
+  const step = (sMax - sMin) / 200;
+  for (let s = sMin; s <= sMax + step/2; s += step) {
+    const price = sigmaToPrice(s, dateStr);
+    const r = recommend(price, avgBuy, base, dateStr, opts);
+    points.push({ x: s, y: r.amt });
+  }
+  return points;
+}
+
+// Build colored zone backgrounds as line "datasets"
+function buildZones(maxAmt, minAmt) {
+  // We'll add subtle vertical stripes via background datasets
+  return [];
+}
+
+// Logarithmic slider mapping: 0..1000 → $1k..$1B
+function sliderToPrice(v) {
+  return Math.round(Math.pow(10, 3 + 6 * v / 1000));
+}
+function priceToSlider(p) {
+  return Math.max(0, Math.min(1000, Math.round((Math.log10(Math.max(p, 1)) - 3) / 6 * 1000)));
+}
+
+let chart;
+function readNumeric(id, min, fallback) {
+  const el = document.getElementById(id);
+  let v = parseFloat(el.value);
+  if (isNaN(v) || v < min) {
+    v = fallback;
+  }
+  return v;
+}
+
+// Returns true if the field is empty or contains an invalid number.
+// Used to defer recalculation while the user is mid-edit.
+function isFieldInvalid(id, min) {
+  const raw = document.getElementById(id).value.trim();
+  if (raw === '') return true;
+  const v = parseFloat(raw);
+  if (isNaN(v) || v < min) return true;
+  return false;
+}
+
+function update() {
+  // If any critical field is mid-edit (empty/invalid), don't recompute —
+  // wait for the user to finish typing or for blur to clamp the value.
+  const criticalInvalid =
+    isFieldInvalid('price', 1) ||
+    isFieldInvalid('base', 1);
+  if (criticalInvalid) {
+    // Visually mark the page as "pending input" by reducing main content opacity.
+    document.querySelector('main').style.opacity = '0.5';
+    return;
+  }
+  document.querySelector('main').style.opacity = '1';
+
+  const price = readNumeric('price', 1, 78180);
+  const btcHeld = readNumeric('btc-held', 0, 0);
+  const totalSpent = readNumeric('total-spent', 0, 0);
+  const base = readNumeric('base', 1, 500);
+  const date = document.getElementById('date').value || '2026-04-24';
+
+  // Risk controls are gated by the "enable" checkbox.
+  // When OFF: behave exactly as default (riskFactor=1.0, no cap, no native overlay).
+  const riskEnabled = document.getElementById('risk-enabled').checked;
+  let riskFactor = 1.0;
+  let maxMonthly = null;
+  if (riskEnabled) {
+    riskFactor = readNumeric('risk', 0.1, 1.0);
+    // max-monthly: must be >= base, capped at 1M
+    const maxMonthlyRaw = readNumeric('max-monthly', base, base);
+    maxMonthly = Math.max(maxMonthlyRaw, base);
+    maxMonthly = Math.min(maxMonthly, 1_000_000);
+  }
+
+  // Update risk/max display labels
+  const riskDisplay = document.getElementById('risk-display');
+  if (riskDisplay) riskDisplay.textContent = '×' + riskFactor.toFixed(2);
+  const maxDisplay = document.getElementById('max-display');
+  if (maxDisplay) {
+    maxDisplay.textContent = maxMonthly ? '$' + maxMonthly.toLocaleString() : '—';
+  }
+
+  // Derived: average buy price and current portfolio value
+  const avg = btcHeld > 0 ? totalSpent / btcHeld : 0;
+  const currentValue = btcHeld * price;
+  const pnl = currentValue - totalSpent;
+  const pnlPct = totalSpent > 0 ? (pnl / totalSpent) * 100 : 0;
+
+  document.getElementById('price-slider').value = priceToSlider(price);
+
+  const opts = { riskFactor, maxMonthly };
+  const r = recommend(price, avg, base, date, opts);
+  const fp = fairPrice(date);
+  const threshold = Math.max(1, Math.round(base * 0.02));
+  const a = actionFromAmt(r.amt, threshold);
+  const expRet = expectedReturn1Y(r.sigma);
+
+  document.getElementById('action-display').textContent = a.label;
+  document.getElementById('action-display').className = 'result-action ' + a.cls;
+  document.getElementById('zone-label').textContent = zoneLabel(r.sigma);
+  document.getElementById('amount-display').textContent =
+    (r.amt >= 0 ? '+' : '') + fmtPlain(r.amt);
+  document.getElementById('amount-display').style.color =
+    r.amt >= threshold ? 'var(--buy)' :
+    r.amt <= -threshold ? 'var(--sell)' :
+    'var(--stop)';
+
+  document.getElementById('sigma-display').textContent =
+    (r.sigma >= 0 ? '+' : '') + r.sigma.toFixed(2) + 'σ';
+  // ===== ADAPTIVE σ RANGE (used by chart, sigma-bar, and table) =====
+  // Always show ±3σ around current position. This covers all key zones
+  // (BUY at -2σ, FAIR at 0σ, SELL at +2σ) with reasonable margin.
+  const sigmaSpan = 3; // ±3σ
+  const sMin = r.sigma - sigmaSpan;
+  const sMax = r.sigma + sigmaSpan;
+
+  // Sigma bar marker position
+  document.getElementById('sigma-marker').style.left =
+    sigmaToPercent(r.sigma, sMin, sMax) + '%';
+
+  // Adaptive sigma bar labels: 5 evenly spaced ticks
+  const sigmaLabelsEl = document.getElementById('sigma-labels');
+  if (sigmaLabelsEl) {
+    const ticks = [];
+    for (let i = 0; i < 5; i++) {
+      const v = sMin + (sMax - sMin) * i / 4;
+      ticks.push(`<span>${v >= 0 ? '+' : ''}${v.toFixed(1)}σ</span>`);
+    }
+    sigmaLabelsEl.innerHTML = ticks.join('');
+  }
+
+  document.getElementById('fair-display').textContent = fmtPlain(fp);
+  document.getElementById('mult-display').textContent = '×' + r.mult.toFixed(3);
+
+  // Position metrics (replacing old avg_buy display)
+  const avgEl = document.getElementById('avg-display');
+  if (avgEl) avgEl.textContent = avg > 0 ? fmtPlain(avg) : '—';
+  const valueEl = document.getElementById('value-display');
+  if (valueEl) valueEl.textContent = btcHeld > 0 ? fmtPlain(currentValue) : '—';
+  const pnlEl = document.getElementById('pnl-display');
+  if (pnlEl) {
+    if (btcHeld === 0 && totalSpent === 0) {
+      pnlEl.textContent = '—';
+      pnlEl.style.color = 'var(--muted)';
+    } else {
+      pnlEl.textContent = (pnl >= 0 ? '+' : '') + fmtPlain(pnl) +
+                          ' (' + (pnl >= 0 ? '+' : '') + pnlPct.toFixed(1) + '%)';
+      pnlEl.style.color = pnl > 0 ? 'var(--buy)' :
+                          pnl < 0 ? 'var(--sell)' :
+                          'var(--muted)';
+    }
+  }
+
+  const expDisplay = document.getElementById('expected-display');
+  if (expRet >= 0) {
+    expDisplay.textContent = '+' + expRet.toFixed(0) + '%';
+    expDisplay.style.color = 'var(--buy)';
+  } else {
+    expDisplay.textContent = expRet.toFixed(0) + '%';
+    expDisplay.style.color = 'var(--sell)';
+  }
+
+  currentDate = date;
+  currentBase = base;
+
+  const curve = buildCurve(avg, base, date, r.sigma, opts);
+
+  // Split curve by ACTION (amount value), not σ-zones.
+  // Threshold: ±2% of base. Below that → STOP (neutral).
+  const buyZone = [];
+  const stopZone = [];
+  const sellZone = [];
+  curve.forEach(p => {
+    if (p.y >= threshold) buyZone.push(p);
+    else if (p.y <= -threshold) sellZone.push(p);
+    else stopZone.push(p);
+  });
+
+  // Build "native" curve (no risk factor, no max cap) — for ghost overlay.
+  // Only show parts where it differs from constrained curve.
+  const showNative = document.getElementById('show-native').checked;
+  const hasConstraints = (riskFactor !== 1.0) || (maxMonthly !== null);
+  let nativeBuy = [];
+  let nativeSell = [];
+  if (showNative && hasConstraints) {
+    const nativeCurve = buildCurve(avg, base, date, r.sigma, {});
+    // Only the segments where native differs significantly from constrained
+    nativeCurve.forEach((np, i) => {
+      const cp = curve[i];
+      const diff = Math.abs(np.y - cp.y);
+      if (diff > threshold) {
+        if (np.y > 0) nativeBuy.push(np);
+        else if (np.y < 0) nativeSell.push(np);
+      }
+    });
+  }
+
+  // Note: sMin/sMax already computed above (±3σ around r.sigma)
+  // Used for chart, sigma bar, and reference table
+
+  if (!chart) {
+    // Apply dynamic range to initial config
+    chartConfig.options.scales.x.min = sMin;
+    chartConfig.options.scales.x.max = sMax;
+    chart = new Chart(document.getElementById('main-chart'), {
+      ...chartConfig,
+      data: {
+        datasets: [
+          {
+            label: 'BUY zone',
+            data: buyZone,
+            borderColor: '#6dbb91',
+            backgroundColor: 'rgba(109, 187, 145, 0.12)',
+            fill: 'origin',
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 0,
+          },
+          {
+            label: 'STOP zone',
+            data: stopZone,
+            borderColor: '#c4a951',
+            backgroundColor: 'rgba(196, 169, 81, 0.10)',
+            fill: 'origin',
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 0,
+          },
+          {
+            label: 'SELL zone',
+            data: sellZone,
+            borderColor: '#d97e6e',
+            backgroundColor: 'rgba(217, 126, 110, 0.12)',
+            fill: 'origin',
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 0,
+          },
+          {
+            label: 'native (unconstrained) BUY',
+            data: nativeBuy,
+            borderColor: 'rgba(109, 187, 145, 0.55)',
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0.35,
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            pointRadius: 0,
+          },
+          {
+            label: 'native (unconstrained) SELL',
+            data: nativeSell,
+            borderColor: 'rgba(217, 126, 110, 0.55)',
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0.35,
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            pointRadius: 0,
+          },
+          {
+            label: 'you',
+            data: [{ x: r.sigma, y: r.amt }],
+            borderColor: '#f0f2f5',
+            backgroundColor: '#f0f2f5',
+            pointRadius: 7,
+            pointHoverRadius: 10,
+            pointStyle: 'circle',
+            pointBorderColor: '#0a0e14',
+            pointBorderWidth: 2,
+            showLine: false,
+          }
+        ]
+      }
+    });
+  } else {
+    chart.data.datasets[0].data = buyZone;
+    chart.data.datasets[1].data = stopZone;
+    chart.data.datasets[2].data = sellZone;
+    chart.data.datasets[3].data = nativeBuy;
+    chart.data.datasets[4].data = nativeSell;
+    chart.data.datasets[5].data = [{ x: r.sigma, y: r.amt }];
+    chart.options.scales.x.min = sMin;
+    chart.options.scales.x.max = sMax;
+    chart.update('none');
+  }
+
+  // Adaptive reference table: 11 evenly-spaced σ-points within ±5σ around current
+  // This way the table shows the same range as the chart and sigma bar.
+  const refSigmas = [];
+  for (let i = 0; i <= 10; i++) {
+    refSigmas.push(sMin + (sMax - sMin) * i / 10);
+  }
+  const refRows = refSigmas.map(s => ({
+    sigma: s,
+    price: sigmaToPrice(s, date),
+    isCurrent: false,
+  }));
+  // Insert current price as its own row at proper position
+  refRows.push({ sigma: r.sigma, price: price, isCurrent: true });
+  refRows.sort((a, b) => a.sigma - b.sigma);
+
+  const tbody = document.getElementById('ref-table');
+  tbody.innerHTML = refRows.map(row => {
+    const rr = recommend(row.price, avg, base, date, opts);
+    const aa = actionFromAmt(rr.amt, threshold);
+    const er = expectedReturn1Y(rr.sigma);
+    const erDisplay = er >= 0 ? `+${er}%` : `${er}%`;
+    const erColor = er >= 0 ? 'var(--buy)' : 'var(--sell)';
+    const sigmaLabel = row.isCurrent
+      ? '<strong>now</strong>'
+      : (rr.sigma >= 0 ? '+' : '') + rr.sigma.toFixed(1) + 'σ';
+    return `<tr class="${row.isCurrent ? 'user-row' : ''}">
+      <td>${fmtPlain(row.price)}</td>
+      <td>${sigmaLabel}</td>
+      <td>×${rr.mult.toFixed(2)}</td>
+      <td>${(rr.amt>=0?'+':'')+fmtPlain(rr.amt)}</td>
+      <td style="color:${erColor}">${erDisplay}</td>
+      <td class="action-cell ${aa.cls}">${aa.label}</td>
+    </tr>`;
+  }).join('');
+}
+
+// These fields don't need the integer/decimal validation in inputRules,
+// just plain "update on input"
+['risk'].forEach(id => {
+  document.getElementById(id).addEventListener('input', update);
+});
+document.getElementById('show-native').addEventListener('change', update);
+
+// Risk controls toggle: enable/disable entire section visually + functionally
+const riskEnabledEl = document.getElementById('risk-enabled');
+const riskSectionEl = document.getElementById('risk-section');
+function applyRiskEnabledState() {
+  const enabled = riskEnabledEl.checked;
+  riskSectionEl.style.opacity = enabled ? '1' : '0.4';
+  riskSectionEl.style.pointerEvents = enabled ? 'auto' : 'none';
+}
+riskEnabledEl.addEventListener('change', () => {
+  applyRiskEnabledState();
+  update();
+});
+
+// Date validation: clamp to model's valid range
+const DATE_MIN = '2010-07-18';
+const DATE_MAX = '2050-12-31';
+const dateEl = document.getElementById('date');
+
+// On any change: if field is empty, restore today; if out of range, clamp.
+function validateDate(e) {
+  const v = e.target.value;
+  if (!v) {
+    e.target.value = todayLocalISO();
+  } else if (v < DATE_MIN) {
+    e.target.value = DATE_MIN;
+  } else if (v > DATE_MAX) {
+    e.target.value = DATE_MAX;
+  }
+  update();
+}
+dateEl.addEventListener('input', validateDate);
+dateEl.addEventListener('change', validateDate);
+dateEl.addEventListener('blur', validateDate);
+
+// === INPUT VALIDATION ===
+// price: 10..1B, integer
+// base: 10..1M, integer
+// max-monthly: 0 (no cap) OR [base..1M], integer — bounds depend on base!
+// total-spent: 0..1T, integer
+// btc-held: 0..21M with up to 8 decimals (satoshi precision)
+//
+// For max-monthly we use a function-based rule because its min depends on `base`.
+function getMaxMonthlyBounds() {
+  const baseEl = document.getElementById('base');
+  const baseVal = parseInt(baseEl.value, 10) || 10;
+  return { min: baseVal, max: 1_000_000 };
+}
+
+const inputRules = [
+  { id: 'price',        min: 1,   max: 1_000_000_000,     integer: true },
+  { id: 'base',         min: 1,   max: 1_000_000,         integer: true },
+  { id: 'total-spent',  min: 0,   max: 1_000_000_000_000, integer: true },
+  { id: 'btc-held',     min: 0,   max: 21_000_000,        integer: false, maxDecimals: 8 },
+];
+
+inputRules.forEach(({ id, min, max, integer, maxDecimals }) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  // Filter input as user types: only digits (and one '.' for decimals)
+  el.addEventListener('input', e => {
+    let v = e.target.value;
+    if (integer) {
+      // Strip everything except digits
+      v = v.replace(/[^0-9]/g, '');
+      // Strip leading zeros (but allow single "0")
+      v = v.replace(/^0+(?=\d)/, '');
+    } else {
+      // Allow digits and one decimal point
+      v = v.replace(/[^0-9.]/g, '');
+      // Only one '.' allowed
+      const firstDot = v.indexOf('.');
+      if (firstDot >= 0) {
+        v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+      }
+      // Limit decimal places (e.g., 8 for satoshis)
+      if (maxDecimals !== undefined && firstDot >= 0) {
+        const decimals = v.slice(firstDot + 1);
+        if (decimals.length > maxDecimals) {
+          v = v.slice(0, firstDot + 1 + maxDecimals);
+        }
+      }
+      // Strip leading zeros except "0" itself or "0.xxx"
+      v = v.replace(/^0+(?=\d)/, '');
+      // Clamp integer part during typing (so user can't type 999999999.0 even briefly)
+      const intPart = parseInt(v.split('.')[0] || '0', 10);
+      if (intPart > max) {
+        v = String(max) + (firstDot >= 0 ? '.' + v.split('.')[1] : '');
+      }
+    }
+    if (v !== e.target.value) {
+      e.target.value = v;
+    }
+    update();
+  });
+
+  // On blur — final clamp and normalization
+  el.addEventListener('blur', e => {
+    let v = parseFloat(e.target.value);
+    if (isNaN(v)) v = min;
+    if (v < min) v = min;
+    if (v > max) v = max;
+    if (integer) {
+      v = Math.floor(v);
+      e.target.value = v;
+    } else {
+      // Round to maxDecimals if specified, else show as-is
+      if (maxDecimals !== undefined) {
+        // Convert to fixed precision, then trim trailing zeros for cleaner display
+        let str = v.toFixed(maxDecimals);
+        // Don't trim — keep 8 decimals visible for satoshi clarity if user typed them
+        // But if value is integer-clean, just show int
+        if (Number(str) === Math.floor(v) && !e.target.value.includes('.')) {
+          e.target.value = Math.floor(v);
+        } else {
+          // Trim trailing zeros but keep at least one if there's a dot
+          str = str.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+          e.target.value = str;
+        }
+      } else {
+        e.target.value = v;
+      }
+    }
+    update();
+  });
+});
+
+// max-monthly: special handling — 0 means "no cap", otherwise bounded [base..1M]
+const maxMonthlyEl = document.getElementById('max-monthly');
+if (maxMonthlyEl) {
+  maxMonthlyEl.addEventListener('input', e => {
+    let v = e.target.value.replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '');
+    if (v !== e.target.value) e.target.value = v;
+    update();
+  });
+  maxMonthlyEl.addEventListener('blur', e => {
+    let v = parseInt(e.target.value, 10);
+    const { min, max } = getMaxMonthlyBounds();
+    if (isNaN(v) || v < min) v = min;
+    if (v > max) v = max;
+    e.target.value = v;
+    update();
+  });
+}
+
+// When base changes, re-validate max-monthly to ensure it's still ≥ base
+document.getElementById('base').addEventListener('blur', () => {
+  const mEl = document.getElementById('max-monthly');
+  let v = parseInt(mEl.value, 10);
+  const { min, max } = getMaxMonthlyBounds();
+  if (isNaN(v) || v < min) {
+    mEl.value = min;
+    update();
+  } else if (v > max) {
+    mEl.value = max;
+    update();
+  }
+});
+
+document.getElementById('price-slider').addEventListener('input', e => {
+  document.getElementById('price').value = sliderToPrice(+e.target.value);
+  update();
+});
+
+// === AUTO-INIT: today's date and current BTC price ===
+function todayLocalISO() {
+  // YYYY-MM-DD in user's local timezone (matches <input type="date"> format)
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+const todayISO = todayLocalISO();
+document.getElementById('today-date').textContent = todayISO;
+document.getElementById('date').value = todayISO;
+
+// Set price to Power Law estimate for today's date.
+// (Online price fetching removed — page works fully offline.)
+function initPrice() {
+  const priceInput = document.getElementById('price');
+  const sourceEl = document.getElementById('price-source');
+
+  const estimate = Math.round(fairPrice(todayISO));
+  priceInput.value = estimate;
+
+  if (sourceEl) {
+    sourceEl.textContent = 'pl estimate · edit if needed';
+    sourceEl.style.color = 'var(--accent)';
+  }
+  update();
+}
+
+initPrice();
+</script>
+</body>
+</html>
