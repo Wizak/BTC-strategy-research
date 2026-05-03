@@ -7,6 +7,8 @@
 [![Status: Research](https://img.shields.io/badge/Status-Research-orange.svg)](#)
 [![Not financial advice](https://img.shields.io/badge/Not-Financial%20Advice-red.svg)](#disclaimer)
 
+🚀 **[Try the calculator live →](https://wizak.github.io/BTC-strategy-research/btc_strategy_lab.html)**
+
 ---
 
 ## Overview
@@ -32,7 +34,7 @@ The repository delivers three artefacts described below.
 
 | File | Description | Size |
 |------|-------------|-----:|
-| [`btc_strategy_lab.html`](./btc_strategy_lab.html) | Interactive web calculator (single self-contained file, no internet required) | ~50 KB |
+| [`btc_strategy_lab.html`](./btc_strategy_lab.html) · [▶ live](https://wizak.github.io/BTC-strategy-research/btc_strategy_lab.html) | Interactive web calculator (single self-contained file, no internet required) | ~50 KB |
 | [`btc_strategy_manual.pdf`](./btc_strategy_manual.pdf) | User manual & technical reference for the calculator | ~650 KB |
 | [`btc_research_report.pdf`](./btc_research_report.pdf) | Academic-style research report on BTC price dynamics | ~1.8 MB |
 
@@ -136,8 +138,17 @@ the same amount each month regardless of price.
 
 ### Use the calculator
 
+**Option A — try it online (no download needed):**
+
+→ **[https://wizak.github.io/BTC-strategy-research/btc_strategy_lab.html](https://wizak.github.io/BTC-strategy-research/btc_strategy_lab.html)**
+
+**Option B — run locally:**
+
 1. Download [`btc_strategy_lab.html`](./btc_strategy_lab.html)
 2. Open it in any modern browser (Chrome, Firefox, Safari, Edge)
+
+Either way:
+
 3. Override the auto-populated price with the real BTC market price
 4. Enter your BTC holdings and cumulative spent (or leave at 0 for a fresh start)
 5. Set your base monthly amount
